@@ -1,0 +1,24 @@
+# Local research artifacts (preserved on disk, excluded from Git)
+/paper/
+/outputs/
+
+# Python environments, caches, and build artifacts
+/.venv/
+/venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.py[cod]
+*.egg-info/
+/build/
+/dist/
+.coverage
+htmlcov/
+
+# Local credentials and editor/OS files
+.env
+.env.*
+!.env.example
+.DS_Store
+*~

@@ -1,0 +1,46 @@
+model:
+  name: Qwen/Qwen2.5-7B-Instruct
+  dtype: bfloat16
+  device_map: auto
+  trust_remote_code: false
+  max_answer_tokens: 20
+  evaluation_batch_size: 8
+
+prompt:
+  protocol_version: answer_only_v2
+  answer_only_instruction: >-
+    Complete the factual statement below. Reply with only the missing entity or
+    value. Do not repeat the statement and do not add an explanation.
+
+data:
+  dataset: json
+  data_files: https://raw.githubusercontent.com/princeton-nlp/MQuAKE/main/datasets/MQuAKE-CF-3k-v2.json
+  adapter: mquake_cf
+  split: train
+  composition_type: all
+  token_mode: entity_span
+  min_examples: 1
+  max_examples: null
+  validation_fraction: 0.2
+  final_retrain_on_all_chains: true
+
+training:
+  seeds: [13, 37, 71]
+  learning_rates: [0.0001, 0.0003, 0.001]
+  anchor_coefficients: [0.0, 0.0001, 0.001, 0.01]
+  alpha: 1.0
+  epochs: 8
+  batch_size: 8
+  gradient_accumulation_steps: 2
+  gradient_clip: 1.0
+  patience: 2
+  checkpoint_steps: [0, 100, 250, 500, 1000, 2500]
+
+analysis:
+  layers: [0, 4, 8, 12, 16, 20, 24, 28]
+  bootstrap_samples: 2000
+  alphas: [0.0, 0.25, 0.5, 0.75, 1.0, 1.25]
+  direction_ranks: [1, 2, 4, 8]
+  seed: 123
+
+output_dir: outputs

@@ -1,0 +1,25 @@
+model:
+  name: meta-llama/Llama-3.1-8B-Instruct
+  dtype: bfloat16
+  device_map: auto
+  trust_remote_code: false
+  max_answer_tokens: 6
+  evaluation_batch_size: 8
+
+data:
+  dataset: tasksource/clutrr
+  train_split: train
+  validation_split: validation
+  test_split: test
+  train_max_hops: 3
+  test_min_hops: 4
+
+training:
+  seed: 13
+  learning_rate: 0.003
+  epochs: 1
+  batch_size: 8
+  gradient_accumulation_steps: 2
+  gradient_clip: 1.0
+
+output_dir: outputs/clutrr
