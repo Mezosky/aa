@@ -20,7 +20,7 @@ Bare config filenames remain supported; all examples below use the new layout.
 
 ## Research scope
 
-This repository studies access to factual edits installed through entity-indexed input residuals. Direct questions activate the source row; a generated-bridge pipeline explicitly accesses the second row. The current paper diagnoses this interface using three seeds for Llama and Qwen, MQuAKE consistency audits, and conditional comparisons on a common set of examples. See `docs/RESULTS.md` for corrected claims.
+This repository studies access to factual edits installed through entity-indexed input residuals. Direct questions activate the source row; a generated-bridge pipeline explicitly accesses the second row. The experiments diagnose this interface using three seeds for Llama and Qwen, MQuAKE consistency audits, and conditional comparisons on a common set of examples. See [RESULTS.md](docs/RESULTS.md) for findings and limitations.
 
 The final additional control performs **automatic lookup during intermediate
 generation**, without a supplied hop template or new training. It uses all six
@@ -190,6 +190,13 @@ Interventions cover scaling, zeroing, row permutation, targeted donor swaps, and
 
 ## Access and conditional audit
 
+Coverage-guaranteed MQuAKE fits are the primary experiments; source-only and
+bridge-only controls use condition-consistent targets. See
+[FINAL_CONFIRMATION.md](docs/FINAL_CONFIRMATION.md) for the protocol and exact
+reproduction commands. Run `make_confirmation_report` before `make_access_report`
+so the access plot uses the primary coverage estimates. The original reference
+fits remain available separately.
+
 ```bash
 python -m geometry_llm audit_mquake --source /tmp/MQuAKE-CF-3k-v2.json --root outputs/265b7bb1723b
 python -m geometry_llm audit_composition --root outputs/bb53acb4d683
@@ -210,15 +217,15 @@ python -m geometry_llm make_access_report
 
 The legacy `correct_explicit` / `A_explicit` fields mean independent constituent coverage, not an executed pipeline. Pipeline predictions are saved separately as `access_seed-*.jsonl`. The alias resolver never substitutes the gold bridge. The second relation template is supplied, which removes autonomous decomposition from this control.
 
-LoRA selection matches constituent efficacy on installed facts and uses no composed outcomes. This is distinct from held-out generalization. Final evaluation uses the same triplet batching as residual evaluation; bfloat16 greedy outputs can differ slightly from the paired-prompt batches used for efficacy selection, so the paper reports the final evaluation counts.
+LoRA selection matches constituent efficacy on installed facts and uses no composed outcomes. This is distinct from held-out generalization. Final evaluation uses the same triplet batching as residual evaluation; bfloat16 greedy outputs can differ slightly from the paired-prompt batches used for efficacy selection, so comparisons use the final evaluation counts.
 
 `--joint-residual` trains the entity table and LoRA together from zero effective updates. It retains both full component budgets, so it is **not** a parameter-matched control. The residual optimizer group reuses its locally selected rate and anchor; the LoRA group uses the supplied rate. Checkpoints at epochs 1, 2, 4, and 8 are compared using constituent efficacy only. Separate `joint_lora/` outputs include the selected checkpoint and paired residual-off and LoRA-off evaluations without retraining. Frozen backbone weights are never optimized.
 
-Main-paper plots use compact grouped bars and mean curves with 95% bootstrap shading. Replicated residual/control intervals include optimization and bridge/answer-group variation; single-fit LoRA and joint intervals include group variation only. Individual replication IDs and conditional counts remain in the appendix.
+Replicated residual/control intervals include optimization and bridge/answer-group variation; single-fit LoRA and joint intervals include group variation only.
 
 ## Matched final-state geometry
 
-The appendix now compares all 533 MQuAKE prompts in both models under frozen, residual, LoRA, joint, random-row, permuted-row, and joint-component-removal conditions. This uses the existing selected adapters, without additional LLM training. Extraction records checkpoint and dataset hashes and does not include answer tokens.
+The geometry analysis compares all 533 MQuAKE prompts in both models under frozen, residual, LoRA, joint, random-row, permuted-row, and joint-component-removal conditions. This uses the existing selected adapters, without additional LLM training. Extraction records checkpoint and dataset hashes and does not include answer tokens.
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 python -m geometry_llm extract_final_geometry --config configs/config_mquake_cf_llama.yaml --root outputs/265b7bb1723b
@@ -229,7 +236,6 @@ for run_root in outputs/265b7bb1723b outputs/86cc2e353f23; do
   OPENBLAS_NUM_THREADS=2 python -m geometry_llm audit_active_geometry --root "$run_root"
 done
 python -m geometry_llm make_final_geometry_report
-tectonic -o paper paper/main.tex
 ```
 
 Each run's `final_geometry/seed-13/` contains representation caches, provenance, covariance spectra, state/displacement CKA, conditional label-permutation diagnostics, shared UMAP coordinates, and group-held-out behavioral probes. `angles_norms.json` and `angles_norms_raw.npz` contain absolute state/update norms, paired norm ratios, rotation angles, cone-related measurements in `analysis.json`, radial/tangential components, and between-interface displacement angles. Zero-displacement directions are undefined, not treated as zero-degree observations. `active_subset.json` audits sampling coverage and repeats key checks on the 478 common active-source queries.
@@ -256,34 +262,3 @@ python -m compileall -q geometry_llm tests
 ```
 
 Unit tests cover answer normalization, alias parsing, span matching, entity-span scaling, and separation of residual masks from answer labels.
-
-## Workshop paper
-
-The manuscript is organized into `paper/sections/` and self-contained PDF figures
-in `paper/images/`. To prepare the active source files for Overleaf after
-regenerating reports:
-
-```bash
-python -m geometry_llm prepare_overleaf --refresh-images
-```
-
-Upload `paper/overleaf.zip`, select `main.tex`, and use XeLaTeX. The ZIP does not
-require `outputs/`, Python, archived drafts, or local build files. See the local
-`paper/README.md` for the section map and editing instructions.
-
-Generate the separate, title-free paper figures and compile the four-page NeurIPS 2026 workshop draft:
-
-```bash
-python -m geometry_llm make_paper_figures
-cd paper
-tectonic main.tex
-```
-
-The compiled draft is `paper/main.pdf`; its four content pages are followed by references.
-
-The final targeted revision and its exact reproduction commands are documented in
-[FINAL_CONFIRMATION.md](docs/FINAL_CONFIRMATION.md). Coverage-guaranteed MQuAKE fits
-are primary; source-only/bridge-only controls use condition-consistent targets.
-Regenerate `geometry_llm/commands/reports/make_confirmation_report.py` before `geometry_llm/commands/reports/make_access_report.py` so the
-main access plot uses the primary coverage estimates. All original reference
-fits and the extended geometry sources remain available separately.
